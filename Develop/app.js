@@ -36,6 +36,21 @@ const { deflateSync } = require("zlib");
 // object with the correct structure and methods. This structure will be crucial in order
 // for the provided `render` function to work! ```
 const employee = [];
+const stopPromt= [{
+    type: "confirm", 
+    
+    name: "stop",
+    message: "Would you like ot exist?"
+}];
+const typeOfEmployee = [
+    {
+        type: "list", 
+        choices: ["Manager", "Engineer", "Intern"],
+        name: "role",
+        message: "What is your role?"
+    
+    }, 
+];
 const managerQuestions = [
     {
         type: "input", 
@@ -61,7 +76,7 @@ const managerQuestions = [
         message: "What is your office number?"
     
     }, 
-],
+];
 
 const engineerQuestions = [
     {
@@ -88,7 +103,7 @@ const engineerQuestions = [
         message: "What is your github username?"
     
     }, 
-],
+];
 
 const internQuestions = [
     {
@@ -118,11 +133,51 @@ const internQuestions = [
 ];
 
 // collect input
+const collectInput = (input = []) => {
+    let role;
 
-const collectInput = async(input = []) => () {
+    return inquirer.prompt(typeOfEmployee)
+    
+    .then(function(answer){
+        role = answer.role;
+       if(answer.role === "Manager"){
+           return inquirer.prompt(managerQuestions);
+       }
+       if(answer.role === "Engineer"){
+        return inquirer.prompt(engineerQuestions);
+    }
+     if(answer.role === "Intern"){
+        return inquirer.prompt(internQuestions);
+    }
+    
+    console.log(answer);
+    })
+    .then(function(answer){
+        let employee;
+        if(role === "Manager"){
+            employee = new Manager(answer.name, answer.id, answer.email, answer.officeNumber);
+        } else if (role === "Engineer"){
+            employee = new Engineer(answer.name, answer.id, answer.email,answer.github);
+        } else {
+            employee = new Intern(answer.name, answer.id, answer.email, answer.school)
+        }
+        input.push(employee);
+        return inquirer.prompt(stopPromt);
+    })
+    .then(function(answer){
+        if(answer.stop){
+            return;
+        }
+        return collectInput(input);
+    })
+    .then(function(){
+        console.log(input);
+        return render(input);
+    })
+    .catch(function(error){
+        console.log(error)
+    });
 
 }
-const test = input => console.log(input);
-   
 
-
+collectInput();
